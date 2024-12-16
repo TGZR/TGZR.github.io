@@ -1,1 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Odd or Even Dice Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .game-container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .dice-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .die {
+            width: 80px;
+            height: 80px;
+            margin: 0 10px;
+            background-color: white;
+            border: 2px solid #333;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 40px;
+            transition: transform 0.5s ease;
+        }
+        .die.rolling {
+            animation: roll 0.5s infinite;
+        }
+        @keyframes roll {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(90deg); }
+            50% { transform: rotate(180deg); }
+            75% { transform: rotate(270deg); }
+            100% { transform: rotate(360deg); }
+        }
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #dice-result, #game-message {
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        .disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Odd or Even Dice Game</h1>
+        <p>Guess if the total of two dice will be odd or even!</p>
+        
+        <div class="dice-container">
+            <div id="dice1" class="die">?</div>
+            <div id="dice2" class="die">?</div>
+        </div>
+        
+        <div id="game-message"></div>
+        
+        <button onclick="guessEven()" id="even-btn">Guess Even</button>
+        <button onclick="guessOdd()" id="odd-btn">Guess Odd</button>
+        
+        <div>
+            <p>Score: <span id="score">0</span></p>
+            <p>Attempts: <span id="attempts">0</span></p>
+        </div>
+    </div>
 
+    <script>
+        let score = 0;
+        let attempts = 0;
+        let isRolling = false;
+
+        function rollDice() {
+            return Math.floor(Math.random() * 6) + 1;
+        }
+
+        function animateDiceRoll(dice1Element, dice2Element, diceValue1, diceValue2) {
+            // Disable buttons during roll
+            document.getElementById('even-btn').classList.add('disabled');
+            document.getElementById('odd-btn').classList.add('disabled');
+            document.getElementById('even-btn').disabled = true;
+            document.getElementById('odd-btn').disabled = true;
+
+            // Add rolling class
+            dice1Element.classList.add('rolling');
+            dice2Element.classList.add('rolling');
+
+            // Reset dice text
+            dice1Element.textContent = '?';
+            dice2Element.textContent = '?';
+
+            // Remove rolling class and show final values after animation
+            setTimeout(() => {
+                dice1Element.classList.remove('rolling');
+                dice2Element.classList.remove('rolling');
+                
+                dice1Element.textContent = diceValue1;
+                dice2Element.textContent = diceValue2;
+
+                // Re-enable buttons
+                document.getElementById('even-btn').classList.remove('disabled');
+                document.getElementById('odd-btn').classList.remove('disabled');
+                document.getElementById('even-btn').disabled = false;
+                document.getElementById('odd-btn').disabled = false;
+            }, 500);
+        }
+
+        function checkGuess(userGuess) {
+            if (isRolling) return;
+
+            isRolling = true;
+            const dice1 = rollDice();
+            const dice2 = rollDice();
+            const total = dice1 + dice2;
+            const isEven = total % 2 === 0;
+
+            const dice1Element = document.getElementById('dice1');
+            const dice2Element = document.getElementById('dice2');
+
+            // Animate dice roll
+            animateDiceRoll(dice1Element, dice2Element, dice1, dice2);
+
+            // Reset game message
+            const gameMessageElement = document.getElementById('game-message');
+            gameMessageElement.textContent = '';
+
+            // Wait for animation to complete before checking guess
+            setTimeout(() => {
+                attempts++;
+                document.getElementById('attempts').textContent = attempts;
+
+                if (userGuess === isEven) {
+                    score++;
+                    document.getElementById('score').textContent = score;
+                    gameMessageElement.textContent = 'Correct! Nice guess!';
+                    gameMessageElement.style.color = 'green';
+                } else {
+                    gameMessageElement.textContent = 'Wrong! Try again.';
+                    gameMessageElement.style.color = 'red';
+                }
+
+                isRolling = false;
+            }, 600);
+        }
+
+        function guessEven() {
+            checkGuess(true);
+        }
+
+        function guessOdd() {
+            checkGuess(false);
+        }
+    </script>
+</body>
+</html>
